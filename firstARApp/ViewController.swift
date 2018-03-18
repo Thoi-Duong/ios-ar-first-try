@@ -28,6 +28,31 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Set the scene to the view
         sceneView.scene = scene
+        
+        // add tap event handler
+        
+        let tapGusture = UITapGestureRecognizer(target: self, action: #selector(self.tapAction(gestureRecognize:)))
+        view.addGestureRecognizer(tapGusture)
+    }
+    
+    @objc func tapAction(gestureRecognize: UITapGestureRecognizer){
+        
+        guard let currentFrame = sceneView.session.currentFrame else {
+            return
+        }
+        
+        var translation = matrix_identity_float4x4
+        translation.columns.3.z = -0.2
+        let transform = simd_mul(currentFrame.camera.transform, translation)
+        
+        // Add a new anchor to the session.
+        let anchor = ARAnchor(transform: transform)
+        sceneView.session.add(anchor: anchor)
+    }
+    
+    // (Elsewhere...) Provide a label node to represent the anchor.
+    func view(_ view: ARSKView, nodeFor anchor: ARAnchor) -> SKNode? {
+        return SKLabelNode(text: "👾")
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -36,6 +61,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // Create a session configuration
         let configuration = ARWorldTrackingSessionConfiguration()
         
+        // configaration
+        configuration.planeDetection = .horizontal
         // Run the view's session
         sceneView.session.run(configuration)
     }
